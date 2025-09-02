@@ -1,0 +1,14 @@
+# Terraform / OpenTofu
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.plan
+crash.log
+# Vars (비밀 가능성)
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+# Keys
+*.pem
+oci_api_key.pem
