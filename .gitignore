@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Terraform / OpenTofu
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.plan
+crash.log
+# Vars
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+# Keys
+*.pem
+oci_api_key.pem
