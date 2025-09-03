@@ -22,7 +22,7 @@ module "compute_m1" {
   subnet_id      = module.network.public_subnet_id
   shape          = "VM.Standard.A1.Flex"
   ocpus          = 1
-  memory_in_gbs  = 6
+  memory_in_gbs  = 1
   display_name        = "M1"
   hostname_label      = "m1"
   ssh_authorized_keys = local.ssh_key
@@ -36,25 +36,25 @@ module "compute_m2" {
   subnet_id      = module.network.public_subnet_id
   shape          = "VM.Standard.A1.Flex"
   ocpus          = 1
-  memory_in_gbs  = 6
+  memory_in_gbs  = 1
   display_name        = "M2"
   hostname_label      = "m2"
   ssh_authorized_keys = local.ssh_key
 }
 
 # C1: ZK, JournalNode, JobHistory, Airflow, Spark History, HAProxy, DataNode, NodeManager (A1 Flex)
-module "compute_c1" {
-  source         = "../../modules/compute_instances"
-  tenancy_ocid   = var.tenancy_ocid
-  compartment_id = var.compartment_ocid
-  subnet_id      = module.network.public_subnet_id
-  shape          = "VM.Standard.A1.Flex"
-  ocpus          = 1
-  memory_in_gbs  = 6
-  display_name        = "C1"
-  hostname_label      = "c1"
-  ssh_authorized_keys = local.ssh_key
-}
+# module "compute_c1" {
+#   source         = "../../modules/compute_instances"
+#   tenancy_ocid   = var.tenancy_ocid
+#   compartment_id = var.compartment_ocid
+#   subnet_id      = module.network.public_subnet_id
+#   shape          = "VM.Standard.A1.Flex"
+#   ocpus          = 1
+#   memory_in_gbs  = 1
+#   display_name        = "C1"
+#   hostname_label      = "c1"
+#   ssh_authorized_keys = local.ssh_key
+# }
 
 # D1: HiveServer2, Spark Worker, DataNode, NodeManager (E2 Micro)
 module "compute_d1" {
@@ -63,6 +63,7 @@ module "compute_d1" {
   compartment_id = var.compartment_ocid
   subnet_id      = module.network.public_subnet_id
   shape          = "VM.Standard.E2.1.Micro"
+  memory_in_gbs  = 1
   display_name        = "D1"
   hostname_label      = "d1"
   ssh_authorized_keys = local.ssh_key
@@ -75,6 +76,7 @@ module "compute_d2" {
   compartment_id = var.compartment_ocid
   subnet_id      = module.network.public_subnet_id
   shape          = "VM.Standard.E2.1.Micro"
+  memory_in_gbs  = 1
   display_name        = "D2"
   hostname_label      = "d2"
   ssh_authorized_keys = local.ssh_key
