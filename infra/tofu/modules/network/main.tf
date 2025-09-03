@@ -39,6 +39,19 @@ resource "oci_core_security_list" "public_sl" {
     }
   }
 
+  # 클러스터 내부 서비스 포트 허용 (내부 CIDR만)
+  dynamic "ingress_security_rules" {
+    for_each = var.service_ports
+    content {
+      protocol = "6" # TCP
+      source   = var.internal_cidr
+      tcp_options {
+        min = ingress_security_rules.value
+        max = ingress_security_rules.value
+      }
+    }
+  }
+
   egress_security_rules {
     protocol    = "all"
     destination = "0.0.0.0/0"
