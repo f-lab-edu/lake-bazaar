@@ -1,27 +1,103 @@
-provider "oci" {
-  region              = var.region             # 기본값 ap-chuncheon-1
-  config_file_profile = "DEFAULT"              # ~/.oci/config 의 섹션명
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+  credentials = file(var.gcp_credentials_file)
 }
 
-module "network" {
-  source         = "../../modules/network"
-  compartment_id = var.compartment_ocid
+resource "google_compute_instance" "master1" {
+  name         = "master1"
+  machine_type = "e2-standard-2"
+  zone         = var.zone
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+      size  = 30
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+  metadata = {
+    ssh-keys = file(var.ssh_public_key_abs_path)
+  }
 }
 
-locals {
-  ssh_key = chomp(file(var.ssh_public_key_abs_path))
+resource "google_compute_instance" "master2" {
+  name         = "master2"
+  machine_type = "e2-standard-2"
+  zone         = var.zone
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+      size  = 30
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+  metadata = {
+    ssh-keys = file(var.ssh_public_key_abs_path)
+  }
 }
 
-module "compute" {
-  source         = "../../modules/compute_instances"
-  tenancy_ocid   = var.tenancy_ocid
-  compartment_id = var.compartment_ocid
-  subnet_id      = module.network.public_subnet_id
-  shape          = var.shape
-  # ocpus            = var.a1flex_ocpus
-  # memory_in_gbs    = var.a1flex_memory_gb
-  display_name        = "dev-vm-1"
-  hostname_label      = "devvm1"
-  ssh_authorized_keys = local.ssh_key
+resource "google_compute_instance" "worker1" {
+  name         = "worker1"
+  machine_type = "e2-standard-2"
+  zone         = var.zone
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+      size  = 30
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+  metadata = {
+    ssh-keys = file(var.ssh_public_key_abs_path)
+  }
+}
+
+resource "google_compute_instance" "worker2" {
+  name         = "worker2"
+  machine_type = "e2-small"
+  zone         = var.zone
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+      size  = 30
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+  metadata = {
+    ssh-keys = file(var.ssh_public_key_abs_path)
+  }
+}
+
+resource "google_compute_instance" "worker3" {
+  name         = "worker3"
+  machine_type = "e2-small"
+  zone         = var.zone
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+      size  = 30
+    }
+  }
+  network_interface {
+    network = "default"
+    access_config {}
+  }
+  metadata = {
+    ssh-keys = file(var.ssh_public_key_abs_path)
+  }
 }
 

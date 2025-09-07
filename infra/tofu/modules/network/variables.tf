@@ -41,8 +41,8 @@ variable "service_ports" {
     10020,  # MapReduce JHS
     10000,  # HiveServer2
     9083,   # Hive Metastore
-    8080,   # Airflow
-    3306    # MySQL
-    13562   # 추가 포트
+  8080,   # Airflow
+  3306,   # MySQL
+  13562   # 추가 포트
   ]
 }
