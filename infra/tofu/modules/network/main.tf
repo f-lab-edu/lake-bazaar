@@ -1,70 +1,48 @@
-resource "oci_core_vcn" "vcn" {
-  compartment_id = var.compartment_id
-  cidr_block     = var.vcn_cidr
-  display_name   = "vcn-lake-bazzar"
-  dns_label      = "lakebazzar"
+
+resource "google_compute_network" "vpc" {
+  name                    = "lake-bazzar-vpc"
+  auto_create_subnetworks = false
 }
 
-resource "oci_core_internet_gateway" "igw" {
-  compartment_id = var.compartment_id
-  vcn_id         = oci_core_vcn.vcn.id
-  display_name   = "igw"
-  enabled        = true
+resource "google_compute_subnetwork" "public" {
+  name          = "lake-bazzar-public-subnet"
+  ip_cidr_range = var.public_subnet_cidr
+  region        = var.region
+  network       = google_compute_network.vpc.id
 }
 
-resource "oci_core_route_table" "public_rt" {
-  compartment_id = var.compartment_id
-  vcn_id         = oci_core_vcn.vcn.id
-  display_name   = "rt-public"
-  route_rules {
-    network_entity_id = oci_core_internet_gateway.igw.id
-    destination       = "0.0.0.0/0"
+# SSH (22) 외부 허용
+resource "google_compute_firewall" "ssh" {
+  name    = "allow-ssh"
+  network = google_compute_network.vpc.name
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
   }
+  source_ranges = var.ssh_source_cidrs
+  target_tags   = ["lake-bazzar-node"]
 }
 
-resource "oci_core_security_list" "public_sl" {
-  compartment_id = var.compartment_id
-  vcn_id         = oci_core_vcn.vcn.id
-  display_name   = "sl-public"
-
-  dynamic "ingress_security_rules" {
-    for_each = var.ssh_source_cidrs
-    content {
-      protocol = "6"
-      source   = ingress_security_rules.value
-      tcp_options {
-        min = 22
-        max = 22
-      }
-    }
+# 클러스터 내부 서비스 포트 (내부 통신만 허용)
+resource "google_compute_firewall" "internal_services" {
+  name    = "allow-internal-services"
+  network = google_compute_network.vpc.name
+  allow {
+    protocol = "tcp"
+    ports    = [for p in var.service_ports : tostring(p)]
   }
-
-  # 클러스터 내부 서비스 포트 허용 (내부 CIDR만)
-  dynamic "ingress_security_rules" {
-    for_each = var.service_ports
-    content {
-      protocol = "6" # TCP
-      source   = var.internal_cidr
-      tcp_options {
-        min = ingress_security_rules.value
-        max = ingress_security_rules.value
-      }
-    }
-  }
-
-  egress_security_rules {
-    protocol    = "all"
-    destination = "0.0.0.0/0"
-  }
+  source_ranges = [var.internal_cidr]
+  target_tags   = ["lake-bazzar-node"]
 }
 
-resource "oci_core_subnet" "public" {
-  compartment_id             = var.compartment_id
-  vcn_id                     = oci_core_vcn.vcn.id
-  display_name               = "subnet-public-1"
-  cidr_block                 = var.public_subnet_cidr
-  route_table_id             = oci_core_route_table.public_rt.id
-  security_list_ids          = [oci_core_security_list.public_sl.id]
-  prohibit_public_ip_on_vnic = false
-  dns_label                  = "pub1"
+# 모든 인스턴스의 아웃바운드 허용
+resource "google_compute_firewall" "egress_all" {
+  name    = "allow-egress-all"
+  network = google_compute_network.vpc.name
+  direction = "EGRESS"
+  allow {
+    protocol = "all"
+  }
+  destination_ranges = ["0.0.0.0/0"]
+  target_tags        = ["lake-bazzar-node"]
 }

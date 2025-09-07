@@ -1,1 +1,8 @@
-output "public_subnet_id" { value = oci_core_subnet.public.id }
+
+output "vpc_id" {
+	value = google_compute_network.vpc.id
+}
+
+output "public_subnet_id" {
+	value = google_compute_subnetwork.public.id
+}
