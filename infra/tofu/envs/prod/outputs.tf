@@ -1,16 +1,16 @@
 
-output "m1_public_ip" {
-  value = module.compute_m1.public_ip
+output "master1_public_ip" {
+  value = google_compute_instance.master1.network_interface[0].access_config[0].nat_ip
 }
-output "m2_public_ip" {
-  value = module.compute_m2.public_ip
+output "master2_public_ip" {
+  value = google_compute_instance.master2.network_interface[0].access_config[0].nat_ip
 }
-# output "c1_public_ip" {
-#   value = module.compute_c1.public_ip
-# }
-output "d1_public_ip" {
-  value = module.compute_d1.public_ip
+output "worker1_public_ip" {
+  value = google_compute_instance.worker1.network_interface[0].access_config[0].nat_ip
 }
-output "d2_public_ip" {
-  value = module.compute_d2.public_ip
+output "worker2_public_ip" {
+  value = google_compute_instance.worker2.network_interface[0].access_config[0].nat_ip
+}
+output "worker3_public_ip" {
+  value = google_compute_instance.worker3.network_interface[0].access_config[0].nat_ip
 }
