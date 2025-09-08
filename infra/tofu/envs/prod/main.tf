@@ -21,7 +21,12 @@ resource "google_compute_instance" "master1" {
     access_config {}
   }
   metadata = {
-    ssh-keys = file(var.ssh_public_key_abs_path)
+    ssh-keys = "chanyong:${file(var.ssh_public_key_abs_path)}"
+    startup-script = <<-EOT
+      #!/bin/bash
+      apt-get update
+      apt-get install -y ansible
+    EOT
   }
 }
 
@@ -40,7 +45,7 @@ resource "google_compute_instance" "master2" {
     access_config {}
   }
   metadata = {
-    ssh-keys = file(var.ssh_public_key_abs_path)
+    ssh-keys = "chanyong:${file(var.ssh_public_key_abs_path)}"
   }
 }
 
@@ -59,7 +64,7 @@ resource "google_compute_instance" "worker1" {
     access_config {}
   }
   metadata = {
-    ssh-keys = file(var.ssh_public_key_abs_path)
+    ssh-keys = "chanyong:${file(var.ssh_public_key_abs_path)}"
   }
 }
 
@@ -78,7 +83,7 @@ resource "google_compute_instance" "worker2" {
     access_config {}
   }
   metadata = {
-    ssh-keys = file(var.ssh_public_key_abs_path)
+    ssh-keys = "chanyong:${file(var.ssh_public_key_abs_path)}"
   }
 }
 
@@ -97,7 +102,7 @@ resource "google_compute_instance" "worker3" {
     access_config {}
   }
   metadata = {
-    ssh-keys = file(var.ssh_public_key_abs_path)
+    ssh-keys = "chanyong:${file(var.ssh_public_key_abs_path)}"
   }
 }
 

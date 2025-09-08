@@ -1,3 +1,7 @@
+variable "ssh_private_key_abs_path" {
+  description = "SSH 프라이빗키 절대경로 (예: /home/you/.ssh/id_ed25519)"
+  type        = string
+}
 
 variable "project_id" {
   description = "GCP 프로젝트 ID"

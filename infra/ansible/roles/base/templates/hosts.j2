@@ -1,0 +1,9 @@
+127.0.0.1   localhost
+127.0.1.1   {{ inventory_hostname }}
+
+# 클러스터 노드들 (ansible_host가 설정된 경우에만 추가)
+{% for host in groups['all'] %}
+{%   set ip = hostvars[host].ansible_host | default('') %}
+{%   if ip %}{{ ip }} {{ host }}
+{%   endif %}
+{% endfor %}
