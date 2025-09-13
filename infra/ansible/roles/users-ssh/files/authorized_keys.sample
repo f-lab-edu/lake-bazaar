@@ -1,0 +1,2 @@
+# 샘플 공개키 (실제 운영키는 별도 관리)
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdummykeyonlyfordemo user@sample.com

@@ -9,7 +9,7 @@ resource "null_resource" "deploy_baseos_to_master1" {
 
   provisioner "local-exec" {
     command = <<EOT
-      bash ./deploy_baseos_to_master1.sh ${google_compute_instance.master1.network_interface[0].access_config[0].nat_ip} ${var.ssh_private_key_abs_path}
+  bash ./bootstrap_master1.sh ${google_compute_instance.master1.network_interface[0].access_config[0].nat_ip} ${var.ssh_user} ${var.ssh_private_key_abs_path}
     EOT
   }
 }

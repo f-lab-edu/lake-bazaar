@@ -18,6 +18,12 @@ ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" "$
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" "$SSH_USER@$MASTER1_IP" 'rm -rf ~/ansible && mkdir -p ~/ansible'
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" -r ../../../ansible/* "$SSH_USER@$MASTER1_IP:~/ansible/"
 
+# 1-2. 현재 tofu outputs 기반으로 hosts.ini 생성 후 master1에 반영 (ansible_host 포함)
+# 로컬에서 렌더링해 업로드 (master1에 tofu 설치 불필요)
+TOFU_OUTPUT_JSON=$(tofu output -json)
+echo "$TOFU_OUTPUT_JSON" | python3 ../../../ansible/scripts/render_hosts_from_tofu.py > /tmp/hosts.ini
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" /tmp/hosts.ini "$SSH_USER@$MASTER1_IP:~/ansible/inventories/prod/hosts.ini"
+
 # 2. 로컬의 SSH 비공개키와 공개키를 master1의 ~/.ssh/에 복사 및 권한 설정, authorized_keys를 공개키로만 덮어쓰기
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" "$SSH_USER@$MASTER1_IP" 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
 scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY" "$SSH_KEY" "$SSH_USER@$MASTER1_IP:~/.ssh/GCPKEY"
@@ -33,5 +39,7 @@ ls -al
 ls -al roles
 ls -al playbooks
 cat ansible.cfg
+echo "==== INVENTORY (hosts.ini) ===="
+cat inventories/prod/hosts.ini
 ansible-playbook -i inventories/prod/hosts.ini playbooks/base-os.yml
 EOF

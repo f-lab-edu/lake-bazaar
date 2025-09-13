@@ -1,3 +1,8 @@
+variable "ssh_user" {
+  description = "SSH 접속 계정명"
+  type        = string
+  default     = "ubuntu"
+}
 variable "ssh_private_key_abs_path" {
   description = "SSH 프라이빗키 절대경로 (예: /home/you/.ssh/id_ed25519)"
   type        = string
@@ -19,8 +24,9 @@ variable "zone" {
 }
 
 variable "gcp_credentials_file" {
-  description = "GCP 서비스 계정 키 파일 경로"
+  description = "GCP 서비스 계정 키 파일 경로 (환경변수 GOOGLE_CREDENTIALS_FILE 사용 가능)"
   type        = string
+  default     = "${env.GOOGLE_CREDENTIALS_FILE}"
 }
 
 variable "ssh_public_key_abs_path" {

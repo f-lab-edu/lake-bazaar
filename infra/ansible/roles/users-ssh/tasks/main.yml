@@ -3,22 +3,21 @@
 
 - name: 공용 그룹 생성
   group:
-    name: lake
+    name: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
     state: present
 
 - name: 공용 사용자 생성
   user:
-    name: lake
+    name: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
     comment: Lake Bazaar Service Account
-    groups: "lake,sudo"
+    groups: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }},sudo"
     append: yes
     shell: /bin/bash
     create_home: yes
 
-- name: sudoers NOPASSWD 구성
   copy:
-    dest: /etc/sudoers.d/99-lake
-    content: "lake ALL=(ALL) NOPASSWD:ALL\n"
+    dest: "/etc/sudoers.d/99-{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    content: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }} ALL=(ALL) NOPASSWD:ALL\n"
     owner: root
     group: root
     mode: '0440'
@@ -26,16 +25,16 @@
 
 - name: lake 계정의 SSH 디렉토리 생성
   file:
-    path: /home/lake/.ssh
+    path: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh"
     state: directory
-    owner: lake
-    group: lake
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
     mode: '0700'
 
 - name: lake 계정 authorized_keys 배포
-  copy:
+  template:
     src: authorized_keys
-    dest: /home/lake/.ssh/authorized_keys
-    owner: lake
-    group: lake
+    dest: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh/authorized_keys"
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
     mode: '0600'
