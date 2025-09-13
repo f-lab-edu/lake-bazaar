@@ -1,3 +1,9 @@
+# 환경설정 및 민감정보
+.env
+.env.*
+# 기타 민감정보
+*.pem
+*.key
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -205,3 +211,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Terraform / OpenTofu
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.plan
+crash.log
+# Vars
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+# Keys
+*.pem
+oci_api_key.pem

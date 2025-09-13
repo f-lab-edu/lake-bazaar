@@ -1,0 +1,1 @@
+{{ lookup('env', 'AUTHORIZED_PUBLIC_KEY') | default('ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDdummykeyonlyfordemo user@sample.com', true) }}

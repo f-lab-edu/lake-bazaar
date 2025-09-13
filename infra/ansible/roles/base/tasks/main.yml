@@ -1,0 +1,76 @@
+---
+# base-os: 모든 노드 공통 OS 베이스라인
+
+- name: 공통 패키지 설치
+  apt:
+    name:
+      - curl
+      - jq
+      - netcat-openbsd
+      - git
+      - rsync
+      - lsof
+    state: present
+    update_cache: yes
+
+- name: chrony 설치 및 NTP 동기화
+  apt:
+    name: chrony
+    state: present
+    update_cache: yes
+
+- name: 타임존 설정 (Asia/Seoul)
+  timezone:
+    name: Asia/Seoul
+
+- name: /etc/hostname 템플릿 적용
+  template:
+    src: hostname.j2
+    dest: /etc/hostname
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: /etc/hosts 템플릿 적용
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: ulimit 설정 (nofile, nproc)
+  pam_limits:
+    domain: '*'
+    limit_type: '-'
+    limit_item: nofile
+    value: 65536
+
+- name: ulimit 설정 (nproc)
+  pam_limits:
+    domain: '*'
+    limit_type: '-'
+    limit_item: nproc
+    value: 65536
+
+- name: vm.swappiness=1 적용
+  sysctl:
+    name: vm.swappiness
+    value: 1
+    state: present
+    sysctl_set: yes
+    reload: yes
+
+- name: Transparent HugePages(THP) 비활성화
+  shell: |
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+    echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  args:
+    executable: /bin/bash
+  become: yes
+
+- name: 로그로테이션(기본 logrotate)
+  apt:
+    name: logrotate
+    state: present
+    update_cache: yes

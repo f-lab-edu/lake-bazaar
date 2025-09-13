@@ -1,0 +1,4 @@
+---
+- name: validate sudoers
+  command: visudo -cf /etc/sudoers
+  changed_when: false
