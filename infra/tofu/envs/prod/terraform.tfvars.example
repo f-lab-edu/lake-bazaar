@@ -1,0 +1,10 @@
+# Example vars file (do not commit real secrets)
+# Prefer environment variables: TF_VAR_project_id, TF_VAR_region, TF_VAR_zone, etc.
+
+project_id            = ""
+region                = "us-central1"
+zone                  = "us-central1-a"
+gcp_credentials_file  = "" # leave empty to use GOOGLE_APPLICATION_CREDENTIALS/ADC
+ssh_public_key_abs_path  = ""
+ssh_private_key_abs_path = ""
+ssh_user = "debian"

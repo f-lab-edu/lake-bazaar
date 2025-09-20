@@ -1,7 +1,43 @@
-# Byte-compiled / optimized / DLL files
+### Python
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
+
+### Dotenv & local configs
+.env
+.env.*
+!.env.example
+
+### Terraform/OpenTofu
+.terraform/
+.terraform.*
+**/.terraform/
+terraform.tfstate
+terraform.tfstate.*
+crash.log
+crash.*.log
+*.tfplan
+*.tfvars
+!infra/tofu/envs/**/terraform.tfvars.example
+*.lock.hcl
+
+### Ansible
+.retry
+.ansible/
+infra/ansible/roles/users-ssh/files/authorized_keys
+
+### Node/Venv/Tools
+node_modules/
+.venv/
+.pytest_cache/
+dist/
+build/
+
+### OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
 
 # C extensions
 *.so
@@ -205,3 +241,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+# Terraform / OpenTofu
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.plan
+crash.log
+# Vars
+*.tfvars
+*.tfvars.json
+*.auto.tfvars
+# Keys
+*.pem
+oci_api_key.pem
