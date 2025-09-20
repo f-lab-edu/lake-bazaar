@@ -45,3 +45,12 @@ if [ ! -f "$PLAYBOOK_PATH" ] && [ -f "ansible/playbooks/base-os.yml" ]; then
 fi
 
 ansible-playbook -i inventories/prod/hosts.ini "$PLAYBOOK_PATH" -e ansible_user="$ANS_USER" --private-key "$SSH_KEY"
+
+# 6) Run SSH mesh validation playbook if present
+MESH_PLAYBOOK_PATH="playbooks/cluster-ssh-mesh.yml"
+if [ -f "$MESH_PLAYBOOK_PATH" ]; then
+	echo "==== Running SSH mesh validation: $MESH_PLAYBOOK_PATH ===="
+	ansible-playbook -i inventories/prod/hosts.ini "$MESH_PLAYBOOK_PATH" -e ansible_user="$ANS_USER" --private-key "$SSH_KEY"
+else
+	echo "==== SSH mesh playbook not found; skipping: $MESH_PLAYBOOK_PATH ===="
+fi

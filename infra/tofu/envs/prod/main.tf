@@ -22,13 +22,7 @@ resource "google_compute_instance" "master1" {
     access_config {}
   }
   metadata = {
-    ssh-keys       = "${var.ssh_user}:${file(var.ssh_public_key_abs_path)}"
-    startup-script = <<-EOT
-      #!/bin/bash
-      set -euo pipefail
-      apt-get update
-      apt-get install -y ansible
-    EOT
+    ssh-keys = "${var.ssh_user}:${file(var.ssh_public_key_abs_path)}"
   }
 }
 

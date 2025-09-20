@@ -26,11 +26,10 @@ resource "null_resource" "deploy_baseos_to_master1" {
     destination = "/tmp/ssh_key"
   }
 
-  # Clean pre-existing ansible dir to avoid stale files, then recreate
+  # Clean pre-existing ansible dir to avoid stale files
   provisioner "remote-exec" {
     inline = [
-      "rm -rf ~/ansible",
-      "mkdir -p ~/ansible"
+      "rm -rf ~/ansible"
     ]
   }
 
@@ -41,8 +40,9 @@ resource "null_resource" "deploy_baseos_to_master1" {
   }
 
   provisioner "file" {
-  source      = "${path.root}/../../../ansible"
-    destination = "/home/${var.ssh_user}/ansible"
+    # Copy the entire ansible directory into $HOME to become ~/ansible
+    source      = "${path.root}/../../../ansible"
+    destination = "/home/${var.ssh_user}"
   }
 
   # Generate dynamic inventory on remote using known IPs
@@ -70,7 +70,7 @@ resource "null_resource" "deploy_baseos_to_master1" {
     inline = [
       "chmod +x ~/bootstrap_master1.sh",
       "chmod 600 /tmp/ssh_key",
-  "bash -lc 'set -a; [ -f ~/.env ] && . ~/.env || true; set +a; ANSIBLE_REMOTE_USER=${var.ssh_user} SSH_USER=${var.ssh_user} ~/deploy_baseos_to_master1.sh ${google_compute_instance.master1.network_interface[0].access_config[0].nat_ip} /tmp/ssh_key'"
+      "bash -lc 'set -a; [ -f ~/.env ] && . ~/.env || true; set +a; ANSIBLE_REMOTE_USER=${var.ssh_user} SSH_USER=${var.ssh_user} ~/bootstrap_master1.sh ${google_compute_instance.master1.network_interface[0].access_config[0].nat_ip} /tmp/ssh_key'"
     ]
   }
 }
