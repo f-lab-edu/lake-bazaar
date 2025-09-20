@@ -1,0 +1,65 @@
+---
+# users-ssh: 공용 사용자/그룹/SSH 키/권한 표준화 (LAKE_* env 기반)
+
+- name: 공용 그룹 생성
+  group:
+    name: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
+    state: present
+
+- name: 공용 사용자 생성
+  user:
+    name: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    comment: Lake Bazaar Service Account
+    groups: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }},sudo"
+    append: yes
+    shell: /bin/bash
+    create_home: yes
+
+- name: sudoers 무패스워드 설정
+  copy:
+    dest: "/etc/sudoers.d/99-{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    content: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }} ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: '0440'
+  notify: validate sudoers
+
+- name: lake 계정의 SSH 디렉토리 생성
+  file:
+    path: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh"
+    state: directory
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
+    mode: '0700'
+
+- name: lake 계정 authorized_keys 배포 (문자열 우선)
+  copy:
+    dest: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh/authorized_keys"
+    content: "{{ lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY') | default('', true) | regex_replace('\\s+#.*$') }}\n"
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
+    mode: '0600'
+  when: (lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY') | default('', true) | length) > 0
+
+- name: lake 계정 authorized_keys 배포 (파일 경로 대체)
+  copy:
+    dest: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh/authorized_keys"
+    content: "{{ lookup('file', lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY_PATH')) | regex_replace('\\s+#.*$') }}\n"
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
+    mode: '0600'
+  when:
+    - (lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY') | default('', true) | length) == 0
+    - (lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY_PATH') | default('', true) | length) > 0
+
+- name: lake 계정 빈 authorized_keys 보장 (키 미제공 시)
+  copy:
+    dest: "/home/{{ lookup('env', 'LAKE_USER') | default('lake', true) }}/.ssh/authorized_keys"
+    content: ""
+    owner: "{{ lookup('env', 'LAKE_USER') | default('lake', true) }}"
+    group: "{{ lookup('env', 'LAKE_GROUP') | default('lake', true) }}"
+    mode: '0600'
+    force: false
+  when:
+    - (lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY') | default('', true) | length) == 0
+    - (lookup('env','USERS_SSH_DEFAULT_AUTHORIZED_KEY_PATH') | default('', true) | length) == 0
