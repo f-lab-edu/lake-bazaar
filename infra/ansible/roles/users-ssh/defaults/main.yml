@@ -1,0 +1,9 @@
+---
+# users-ssh role defaults
+
+# Structured model of users to create. If empty, only ensure directories.
+# Can be provided via env USERS_SSH_MODEL_JSON (string) or vars.
+users_ssh_model: []
+
+# Whether to enforce authorized_keys strictly (replace) or append
+users_ssh_enforce: true

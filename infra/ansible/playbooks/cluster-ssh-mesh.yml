@@ -1,0 +1,75 @@
+---
+# Play 1: 각 호스트에서 lake 키 생성 및 공개키 수집
+- hosts: all
+  become: yes
+  vars:
+    lake_user: "{{ lookup('env','LAKE_USER') | default('lake', true) }}"
+    lake_group: "{{ lookup('env','LAKE_GROUP') | default('lake', true) }}"
+    key_path: "/home/{{ lake_user }}/.ssh/id_rsa"
+  tasks:
+    - name: Ensure lake user exists (idempotent)
+      user:
+        name: "{{ lake_user }}"
+        groups: "{{ lake_group }},sudo"
+        append: yes
+        shell: /bin/bash
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/home/{{ lake_user }}/.ssh"
+        state: directory
+        owner: "{{ lake_user }}"
+        group: "{{ lake_group }}"
+        mode: '0700'
+
+    - name: Generate SSH key on each host if missing
+      openssh_keypair:
+        path: "{{ key_path }}"
+        type: rsa
+        size: 4096
+        owner: "{{ lake_user }}"
+        group: "{{ lake_group }}"
+        mode: '0600'
+
+    - name: Read public key
+      slurp:
+        src: "{{ key_path }}.pub"
+      register: pubkey
+
+    - name: Set host fact with public key
+      set_fact:
+        lake_pubkey: "{{ pubkey.content | b64decode | trim }}"
+
+# Play 2: 모든 호스트의 pubkey를 authorized_keys로 상호 배포하고 SSH 테스트
+- hosts: all
+  become: yes
+  vars:
+    lake_user: "{{ lookup('env','LAKE_USER') | default('lake', true) }}"
+    lake_group: "{{ lookup('env','LAKE_GROUP') | default('lake', true) }}"
+    key_path: "/home/{{ lake_user }}/.ssh/id_rsa"
+  tasks:
+    - name: Ensure known_hosts entries for all hosts (as lake)
+      known_hosts:
+        path: "/home/{{ lake_user }}/.ssh/known_hosts"
+        name: "{{ hostvars[item].ansible_host | default(item) }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -T 3 ' ~ (hostvars[item].ansible_host | default(item))) }}"
+        state: present
+      loop: "{{ groups['all'] }}"
+      become_user: "{{ lake_user }}"
+
+    - name: Authorize all hosts' pubkeys for lake user
+      authorized_key:
+        user: "{{ lake_user }}"
+        state: present
+        key: "{{ hostvars[item].lake_pubkey }}"
+        manage_dir: yes
+      loop: "{{ groups['all'] }}"
+
+    - name: Test passwordless SSH to each host as lake user
+      shell: >
+        ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+        -i {{ key_path }} {{ lake_user }}@{{ hostvars[item].ansible_host | default(item) }} echo OK
+      loop: "{{ groups['all'] }}"
+      args:
+        executable: /bin/bash
+      become_user: "{{ lake_user }}"
